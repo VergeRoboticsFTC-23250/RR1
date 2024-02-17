@@ -25,7 +25,7 @@ public class Robot {
     public static int SLEEP_TIME_SHORT = 300;
     public static int SLEEP_TIME_LONG = 700;
 
-    public enum RobotState{ INTAKE, REST, OUTTAKE}
+    public enum RobotState{INTAKE, REST, OUTTAKE}
 
     public enum PropPosition{
         LEFT,
@@ -48,6 +48,7 @@ public class Robot {
     }
 
     public static void RestToIntake() throws InterruptedException {
+        Slides.run(0);
         Claw.setBothGrips(false);
         Nicker.setOut();
         Arm.setIntake();
@@ -59,6 +60,7 @@ public class Robot {
     }
 
     public static void IntakeToRest() throws InterruptedException {
+        Slides.run(0);
         Claw.setBothGrips(false);
         Nicker.setRest();
         Claw.setRest();
@@ -69,6 +71,7 @@ public class Robot {
     }
 
     public static void RestToOuttake() throws InterruptedException {
+        Slides.run(0);
         Claw.setBothGrips(false);
         Arm.setOuttake();
         Thread.sleep(SLEEP_TIME_SHORT);
@@ -79,8 +82,9 @@ public class Robot {
     }
 
     public static void OuttakeToRest() throws InterruptedException {
+        Slides.run(0);
         Claw.setBothGrips(false);
-        Claw.setSafe();
+        Claw.setRest();
         Thread.sleep(SLEEP_TIME_SHORT);
         Arm.setRest();
         Thread.sleep(SLEEP_TIME_LONG);
@@ -192,10 +196,10 @@ public class Robot {
         public static Servo rightPivot;
         public static Servo leftPivot;
 
-        public static double restPos = 0.33;
+        public static double restPos = 0.35;
         public static double outtakePos = 0.86;
-        public static double intakePos = 0.27;
-        public static double offset = -0.05;
+        public static double intakePos = 0.3;
+        public static double offset = 0;
 
         public static boolean isResting = false;
 
@@ -243,7 +247,6 @@ public class Robot {
 
         public static void init(HardwareMap hardwareMap){
             pivot = hardwareMap.get(Servo.class, "clawPivot");
-            pivot.setDirection(Servo.Direction.REVERSE);
 
             rightGrip = hardwareMap.get(Servo.class, "rightGrip");
             leftGrip = hardwareMap.get(Servo.class, "leftGrip");
@@ -289,10 +292,10 @@ public class Robot {
         public static Servo rightNicker;
         public static Servo leftNicker;
 
-        public static double homeR = 0.385;
-        public static double homeL = 0.375;
+        public static double homeR = .4;
+        public static double homeL = .4;
         public static double out = 1;
-        public static double rest = 0;
+        public static double rest = 0.025;
 
         public static void init(HardwareMap hardwareMap){
             rightNicker = hardwareMap.get(Servo.class, "rightNicker");
