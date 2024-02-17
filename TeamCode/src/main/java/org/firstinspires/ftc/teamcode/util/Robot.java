@@ -33,6 +33,11 @@ public class Robot {
         RIGHT
     }
 
+    public enum AllianceSide{
+        BLUE,
+        RED,
+    }
+
     public static RobotState robotState = RobotState.INTAKE;
 
     public static void init(HardwareMap hardwareMap){

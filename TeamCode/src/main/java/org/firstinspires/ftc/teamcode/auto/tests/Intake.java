@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.auto.tests;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 
@@ -9,6 +10,7 @@ import org.firstinspires.ftc.teamcode.util.Robot;
 
 @Autonomous
 @Config
+@Disabled
 public class Intake extends LinearOpMode {
     public static double activePower = -0.25;
     public static double overdrivePower = -0.5;

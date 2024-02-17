@@ -14,10 +14,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
 public class DetectionBlue {
     static OpenCvWebcam webcam;
     public static BlueSidePipeline pipeline;
-    static Telemetry telemetry;
-
-    public static void init(HardwareMap hardwareMap, Telemetry telemetry){
-        DetectionBlue.telemetry = telemetry;
+    public static void init(HardwareMap hardwareMap){
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
@@ -39,5 +36,10 @@ public class DetectionBlue {
 
     public static PropPosition getPosition(){
         return pipeline.getLastPosition();
+    }
+
+    public static void stop(){
+        webcam.stopStreaming();
+        webcam.closeCameraDevice();
     }
 }

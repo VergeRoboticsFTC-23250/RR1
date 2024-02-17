@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.auto.paths.blue60;
+package org.firstinspires.ftc.teamcode.auto.old.paths.blue60;
 
 import static org.firstinspires.ftc.teamcode.util.Robot.Chassis.drive;
 
@@ -8,25 +8,27 @@ import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.util.Robot;
 
 @Config
 @Autonomous
-public class BlueLeft60 extends LinearOpMode {
+@Disabled
+public class BlueRight60 extends LinearOpMode {
     public static double x1 = 60;
     public static double y1 = 5;
 
     public static double delay1 = 0.85;
 
     public static double x2 = 60;
-    public static double y2 = 38;
+    public static double y2 = -7.5;
 
     public static double delay2 = 0.2;
 
-    public static double x3 = 32;
-    public static double y3 = 78;
+    public static double x3 = 78;
+    public static double y3 = 82;
 
     public static double delay3 = 0.5;
 
@@ -34,8 +36,7 @@ public class BlueLeft60 extends LinearOpMode {
     public static double y4 = 0;
 
     public static double x5 = 110;
-    public static double y5 = -136.5;
-    public static double yTemp = 60;
+    public static double y5 = -138;
 
     public static double parkX = -24;
 
@@ -49,9 +50,12 @@ public class BlueLeft60 extends LinearOpMode {
     public static int pushTime = 1500;
     public static int strafeTime = 200;
 
-    public static double offsetX = -24;
-    public static double offsetY = 2;
+    public static double offsetX = -2;
+    public static double offsetY = -6;
     public static double parkBack = 8;
+
+    public static double slides = 750;
+    public static double slidesPower = 500;
 
     public void runOpMode() throws InterruptedException {
         Robot.init(hardwareMap);
@@ -90,8 +94,6 @@ public class BlueLeft60 extends LinearOpMode {
                             Robot.Arm.setRest();
                             return false;
                         })
-                        .waitSeconds(delay3 * 2)
-//                        .strafeToLinearHeading(new Vector2d(x4, yTemp), Math.toRadians(90))
 //                        .strafeToLinearHeading(new Vector2d(x4, y4), Math.toRadians(90))
 //                        .afterTime(0.25, telemetryPacket -> {
 //                            Robot.Nicker.setOut();

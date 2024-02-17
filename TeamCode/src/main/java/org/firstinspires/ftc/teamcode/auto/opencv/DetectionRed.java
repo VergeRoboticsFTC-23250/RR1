@@ -14,10 +14,8 @@ import org.openftc.easyopencv.OpenCvWebcam;
 public class DetectionRed {
     static OpenCvWebcam webcam;
     public static RedSidePipeline pipeline;
-    static Telemetry telemetry;
 
-    public static void init(HardwareMap hardwareMap, Telemetry telemetry){
-        DetectionRed.telemetry = telemetry;
+    public static void init(HardwareMap hardwareMap){
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);

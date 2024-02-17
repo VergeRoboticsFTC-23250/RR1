@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.auto.paths.blue60;
+package org.firstinspires.ftc.teamcode.auto.old.paths.blue60;
 
 import static org.firstinspires.ftc.teamcode.util.Robot.Chassis.drive;
 
@@ -8,25 +8,27 @@ import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.util.Robot;
 
 @Config
 @Autonomous
-public class BlueRight60 extends LinearOpMode {
-    public static double x1 = 60;
-    public static double y1 = 5;
+@Disabled
+public class BlueCenter60 extends LinearOpMode {
+    public static double x1 = 75;
+    public static double y1 = 26;
 
     public static double delay1 = 0.85;
 
-    public static double x2 = 60;
-    public static double y2 = -7.5;
+    public static double x2 = 75;
+    public static double y2 = 14;
 
     public static double delay2 = 0.2;
 
-    public static double x3 = 78;
-    public static double y3 = 82;
+    public static double x3 = 40; //Changed based on last match
+    public static double y3 = 74;
 
     public static double delay3 = 0.5;
 
@@ -34,7 +36,9 @@ public class BlueRight60 extends LinearOpMode {
     public static double y4 = 0;
 
     public static double x5 = 110;
-    public static double y5 = -138;
+    public static double y5 = -136.5;
+
+    public static double yTemp = 40;
 
     public static double parkX = -24;
 
@@ -48,12 +52,12 @@ public class BlueRight60 extends LinearOpMode {
     public static int pushTime = 1500;
     public static int strafeTime = 200;
 
-    public static double offsetX = -2;
-    public static double offsetY = -6;
-    public static double parkBack = 8;
+    public static double offsetX = 0;
+    public static double offsetY = 24;
+    public static double parkBack = 12;
 
-    public static double slides = 750;
-    public static double slidesPower = 500;
+    public static double slides = 600;
+    public static double slidesPower = 1;
 
     public void runOpMode() throws InterruptedException {
         Robot.init(hardwareMap);
@@ -77,7 +81,10 @@ public class BlueRight60 extends LinearOpMode {
                         })
                         .afterTime(delay2, telemetryPacket -> {
                             Robot.Claw.setBothGrips(false);
-                            Robot.Claw.setOuttake();
+                            return false;
+                        })
+                        .afterTime(delay2*2, telemetryPacket -> {
+                            Robot.Claw.setOuttake(); // Change if neccissary but test first.
                             Robot.Arm.setOuttake();
                             return false;
                         })
@@ -92,6 +99,8 @@ public class BlueRight60 extends LinearOpMode {
                             Robot.Arm.setRest();
                             return false;
                         })
+                        .waitSeconds(delay3 * 2)
+                        //.strafeToLinearHeading(new Vector2d(x4, yTemp), Math.toRadians(90))
 //                        .strafeToLinearHeading(new Vector2d(x4, y4), Math.toRadians(90))
 //                        .afterTime(0.25, telemetryPacket -> {
 //                            Robot.Nicker.setOut();
@@ -167,6 +176,17 @@ public class BlueRight60 extends LinearOpMode {
 //                            Robot.Claw.setOuttake();
 //                            return false;
 //                        })
+//                        .afterTime(0.5, telemetryPacket -> {
+//                            Robot.Slides.run(slidesPower);
+//                            int pos = Robot.Slides.getPos();
+//
+//                            if(pos < slides){
+//                                return true;
+//                            }else {
+//                                Robot.Slides.run(0);
+//                                return false;
+//                            }
+//                        })
 //                        .splineTo(new Vector2d(x3 - offsetX, y3 + offsetY), Math.toRadians(90))
 //                        .waitSeconds(0.5)
 //                        .stopAndAdd(telemetryPacket -> {
@@ -174,6 +194,18 @@ public class BlueRight60 extends LinearOpMode {
 //                            return false;
 //                        })
 //                        .waitSeconds(0.5)
+//                        .strafeToLinearHeading(new Vector2d(x3 - offsetX, y3 + offsetY - 12), Math.toRadians(90))
+//                        .afterTime(0.5, telemetryPacket -> {
+//                            Robot.Slides.run(-slidesPower);
+//                            int pos = Robot.Slides.getPos();
+//
+//                            if(pos > 0){
+//                                return true;
+//                            }else {
+//                                Robot.Slides.run(0);
+//                                return false;
+//                            }
+//                        })
 //                        .stopAndAdd(telemetryPacket -> {
 //                            Robot.Claw.setBothGrips(false);
 //                            Robot.Claw.setRest();
