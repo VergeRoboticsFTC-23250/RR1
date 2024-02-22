@@ -12,7 +12,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvWebcam;
 
 public class DetectionBlue {
-    static OpenCvWebcam webcam;
+    public static OpenCvWebcam webcam;
     public static BlueSidePipeline pipeline;
     public static void init(HardwareMap hardwareMap){
 
@@ -36,10 +36,5 @@ public class DetectionBlue {
 
     public static PropPosition getPosition(){
         return pipeline.getLastPosition();
-    }
-
-    public static void stop(){
-        webcam.stopStreaming();
-        webcam.closeCameraDevice();
     }
 }

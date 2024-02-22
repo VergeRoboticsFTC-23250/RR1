@@ -21,13 +21,13 @@ import java.util.concurrent.TimeUnit;
 
 @Config
 public class AprilTagLocalization {
-    public static double DESIRED_DISTANCE = 6; //  this is how close the camera should get to the target (inches)
+    public static double DESIRED_DISTANCE = 12; //  this is how close the camera should get to the target (inches)
 
     //  Set the GAIN constants to control the relationship between the measured position error, and how much power is
     //  applied to the drive motors to correct the error.
     //  Drive = Error * Gain    Make these values smaller for smoother control, or larger for a more aggressive response.
     public static double SPEED_GAIN  =  0.03  ;   //  Forward Speed Control "Gain". eg: Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
-    public static double STRAFE_GAIN =  0.025 ;   //  Strafe Speed Control "Gain".  eg: Ramp up to 25% power at a 25 degree Yaw error.   (0.25 / 25.0)
+    public static double STRAFE_GAIN =  0.03 ;   //  Strafe Speed Control "Gain".  eg: Ramp up to 25% power at a 25 degree Yaw error.   (0.25 / 25.0)
     public static double TURN_GAIN   =  0.03  ;   //  Turn Control "Gain".  eg: Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
 
     public static double MAX_AUTO_SPEED = 1;   //  Clip the approach speed to this max value (adjust for your robot)
@@ -49,6 +49,10 @@ public class AprilTagLocalization {
     static double  headingError    = 0;
     static double  yawError        = 0;
 
+    static double rangeThreshold  = 0.05;
+    static double headingThreshold = 0.05;
+    static double yawThreshold = 0.05;
+
     public static void init (HardwareMap hardwareMap, int tag) throws InterruptedException {
         DESIRED_TAG_ID = tag;
 
@@ -69,11 +73,16 @@ public class AprilTagLocalization {
         }
     }
 
+    static boolean targetFound     = false;    // Set to true when an AprilTag target is detected
+    public static double  drive           = 0;        // Desired forward power/speed (-1 to +1)
+    public static double  strafe          = 0;        // Desired strafe power/speed (-1 to +1)
+    public static double  turn            = 0;        // Desired turning power/speed (-1 to +1)
+
     public static void update() throws InterruptedException {
-        boolean targetFound     = false;    // Set to true when an AprilTag target is detected
-        double  drive           = 0;        // Desired forward power/speed (-1 to +1)
-        double  strafe          = 0;        // Desired strafe power/speed (-1 to +1)
-        double  turn            = 0;        // Desired turning power/speed (-1 to +1)
+        targetFound     = false;    // Set to true when an AprilTag target is detected
+        drive           = 0;        // Desired forward power/speed (-1 to +1)
+        strafe          = 0;        // Desired strafe power/speed (-1 to +1)
+        turn            = 0;        // Desired turning power/speed (-1 to +1)
 
         targetFound = false;
         desiredTag  = null;
@@ -128,6 +137,10 @@ public class AprilTagLocalization {
 
     public static double getYError() {
         return yawError;
+    }
+
+    public static boolean isAccurate(double margin){
+        return strafe < margin && turn < margin && drive < margin;
     }
 
     public static void moveRobot(double x, double y, double yaw) {
@@ -185,11 +198,13 @@ public class AprilTagLocalization {
                     .build();
         }
     }
-
     /*
      Manually set the camera gain and exposure.
      This can only be called AFTER calling initAprilTag(), and only works for Webcams;
     */
+    public static boolean isPositioned(){
+        return Math.abs(rangeError) < rangeThreshold && Math.abs(headingError) < headingThreshold && Math.abs(yawError) < yawThreshold;
+    }
     private static void    setManualExposure(int exposureMS, int gain) throws InterruptedException {
         // Wait for the camera to be open, then use the controls
 
@@ -214,5 +229,8 @@ public class AprilTagLocalization {
         GainControl gainControl = visionPortal.getCameraControl(GainControl.class);
         gainControl.setGain(gain);
         sleep(20);
+    }
+    public static void setDesiredTagId(int id){
+        DESIRED_TAG_ID = id;
     }
 }

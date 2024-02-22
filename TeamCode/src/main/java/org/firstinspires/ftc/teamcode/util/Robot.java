@@ -10,20 +10,38 @@ import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.qualcomm.hardware.bosch.BHI260IMU;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.util.roadrunner.MecanumDrive;
+import org.firstinspires.ftc.teamcode.util.roadrunner.ThreeDeadWheelLocalizer;
+import org.firstinspires.ftc.teamcode.util.roadrunner.TwoDeadWheelLocalizer;
 
 @Config
 public class Robot {
     public static double SLOW_SPEED = 0.3;
     public static int SLEEP_TIME_SHORT = 300;
     public static int SLEEP_TIME_LONG = 700;
+
+    public static double KpForward = 2;
+    public static double KiForward = 1;
+    public static double KdForward = 0.16;
+
+    public static double KpHeading = 2;
+    public static double KiHeading = 0;
+    public static double KdHeading = 0.001;
 
     public enum RobotState{INTAKE, REST, OUTTAKE}
 
@@ -50,6 +68,8 @@ public class Robot {
         Nicker.init(hardwareMap);
         LimitSwitch.init(hardwareMap);
         Color.init(hardwareMap);
+        Heading.init(hardwareMap);
+        Distance.init(hardwareMap);
     }
 
     public static void RestToIntake() throws InterruptedException {
@@ -104,6 +124,10 @@ public class Robot {
 
         public static void init(HardwareMap hardwareMap){
             drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
+        }
+
+        public static void init(HardwareMap hardwareMap, Pose2d pose){
+            drive = new MecanumDrive(hardwareMap, pose);
         }
 
         public static void run(double x, double y, double heading){
@@ -297,7 +321,7 @@ public class Robot {
         public static Servo rightNicker;
         public static Servo leftNicker;
 
-        public static double homeR = .4;
+        public static double homeR = .35;
         public static double homeL = .4;
         public static double out = 1;
         public static double rest = 0.025;
@@ -353,7 +377,7 @@ public class Robot {
 
     @Config
     public static class Hook{
-        public static int extendPos = 5500;
+        public static int extendPos = -6000;
         private static DcMotor hookMotor;
 
         private static boolean isExtended = false;
@@ -368,7 +392,7 @@ public class Robot {
         public static void toggle(int pow){
             hookMotor.setPower(0);
             isExtended = !isExtended;
-            hookMotor.setTargetPosition(isExtended? extendPos : 1000);
+            hookMotor.setTargetPosition(isExtended? extendPos : -1500);
             hookMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             hookMotor.setPower(pow);
             while (hookMotor.isBusy()){}
@@ -425,6 +449,41 @@ public class Robot {
                     hsvValues);
 
             return hsvValues[2] > threshhold;
+        }
+    }
+
+    public static class Heading{
+        private static BHI260IMU imu;
+        static IMU.Parameters params = new IMU.Parameters(
+                new RevHubOrientationOnRobot(
+                        RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
+                        RevHubOrientationOnRobot.UsbFacingDirection.UP
+                )
+        );
+        public static void init(HardwareMap hardwareMap){
+            imu = hardwareMap.get(BHI260IMU.class, "imu");
+            imu.initialize(params);
+            imu.resetYaw();
+        }
+        public static double getYaw(){
+            return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS) + Math.PI;
+        }
+        public static void reboot(){
+            imu.initialize(params);
+        }
+        public static void reset(){
+            imu.resetYaw();
+        }
+    }
+
+    public static class Distance{
+        private static DistanceSensor distance;
+        public static void init(HardwareMap hardwareMap){
+            distance = hardwareMap.get(DistanceSensor.class, "distance");
+        }
+
+        public static double getDist(DistanceUnit unit){
+            return distance.getDistance(unit);
         }
     }
 }

@@ -10,7 +10,6 @@ import org.firstinspires.ftc.teamcode.util.Robot;
 
 @Autonomous
 @Config
-@Disabled
 public class Intake extends LinearOpMode {
     public static double activePower = -0.25;
     public static double overdrivePower = -0.5;

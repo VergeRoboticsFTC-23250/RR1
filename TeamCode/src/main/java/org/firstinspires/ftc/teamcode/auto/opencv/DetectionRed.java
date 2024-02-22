@@ -12,7 +12,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvWebcam;
 
 public class DetectionRed {
-    static OpenCvWebcam webcam;
+    public static OpenCvWebcam webcam;
     public static RedSidePipeline pipeline;
 
     public static void init(HardwareMap hardwareMap){
