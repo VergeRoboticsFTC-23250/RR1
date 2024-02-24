@@ -7,6 +7,7 @@ import com.qualcomm.hardware.bosch.BHI260IMU;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.Range;
 
@@ -23,11 +24,14 @@ public class StraightGyro extends LinearOpMode {
     public static double pGain = 4;
     public void runOpMode(){
         Robot.init(hardwareMap);
+        DigitalChannel limitL = hardwareMap.get(DigitalChannel.class, "limitR");
+        DigitalChannel limitR = hardwareMap.get(DigitalChannel.class, "limitL");
+
         waitForStart();
 
-        double currentY = drive.pose.position.y;
-        while (Math.abs(currentY - drive.pose.position.y) < pushIn){
-            Robot.Chassis.run(power, 0, (target - Robot.Heading.getYaw()) * pGain);
+        while (opModeIsActive()){
+            telemetry.addData("", limitL.getState() + " | " + limitR.getState());
+            telemetry.update();
         }
     }
 }

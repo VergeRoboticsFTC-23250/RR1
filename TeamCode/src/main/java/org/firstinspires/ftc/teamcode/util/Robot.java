@@ -22,6 +22,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.Function;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
@@ -35,13 +36,7 @@ public class Robot {
     public static int SLEEP_TIME_SHORT = 300;
     public static int SLEEP_TIME_LONG = 700;
 
-    public static double KpForward = 2;
-    public static double KiForward = 1;
-    public static double KdForward = 0.16;
-
-    public static double KpHeading = 2;
-    public static double KiHeading = 0;
-    public static double KdHeading = 0.001;
+    public static double pGainHeading = 4;
 
     public enum RobotState{INTAKE, REST, OUTTAKE}
 
@@ -98,9 +93,9 @@ public class Robot {
     public static void RestToOuttake() throws InterruptedException {
         Slides.run(0);
         Claw.setBothGrips(false);
-        Arm.setOuttake();
-        Thread.sleep(SLEEP_TIME_SHORT);
         Claw.setOuttake();
+        Thread.sleep(SLEEP_TIME_SHORT);
+        Arm.setOuttake();
         Thread.sleep(SLEEP_TIME_SHORT);
 
         robotState = RobotState.OUTTAKE;
@@ -136,6 +131,26 @@ public class Robot {
             );
 
             drive.updatePoseEstimate();
+        }
+
+        public static void runX(double dist, double power) throws InterruptedException {
+            Robot.Heading.reboot();
+            double currentY = drive.pose.position.y;
+            while (Math.abs(currentY - drive.pose.position.y) < dist){
+                Robot.Chassis.run(power, 0, ((Math.PI * 1/2) - Robot.Heading.getYaw()) * pGainHeading);
+                drive.updatePoseEstimate();
+            }
+            Robot.Chassis.run(0, 0, 0);
+        }
+
+        public static void runY(double dist, double power) throws InterruptedException {
+            Robot.Heading.reboot();
+            double currentX = drive.pose.position.x;
+            while (Math.abs(currentX - drive.pose.position.x) < dist){
+                Robot.Chassis.run(0, power, ((Math.PI * 1/2) - Robot.Heading.getYaw()) * pGainHeading);
+                drive.updatePoseEstimate();
+            }
+            Robot.Chassis.run(0, 0, 0);
         }
     }
 
@@ -321,9 +336,10 @@ public class Robot {
         public static Servo rightNicker;
         public static Servo leftNicker;
 
-        public static double homeR = .35;
-        public static double homeL = .4;
-        public static double out = 1;
+        public static double homeR = .3;
+        public static double homeL = .3;
+        public static double outL = 0.9;
+        public static double outR = 0.965;
         public static double rest = 0.025;
 
         public static void init(HardwareMap hardwareMap){
@@ -341,8 +357,8 @@ public class Robot {
         }
 
         public static void setOut(){
-            rightNicker.setPosition(out);
-            leftNicker.setPosition(out);
+            rightNicker.setPosition(outR);
+            leftNicker.setPosition(outL);
         }
 
         public static void setRest(){
@@ -367,11 +383,11 @@ public class Robot {
         }
 
         public static void setRightOut(){
-            rightNicker.setPosition(out);
+            rightNicker.setPosition(outR);
         }
 
         public static void setLeftOut(){
-            leftNicker.setPosition(out);
+            leftNicker.setPosition(outL);
         }
     }
 
@@ -477,7 +493,7 @@ public class Robot {
     }
 
     public static class Distance{
-        private static DistanceSensor distance;
+        public static DistanceSensor distance;
         public static void init(HardwareMap hardwareMap){
             distance = hardwareMap.get(DistanceSensor.class, "distance");
         }
@@ -487,3 +503,4 @@ public class Robot {
         }
     }
 }
+//Token: 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

@@ -116,7 +116,7 @@ public class AprilTagLocalization {
 
             // Use the speed and turn "gains" to calculate how we want the robot to move.
             drive  = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
-            turn   = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN) ;
+            turn   = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
             strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
         } else {
             //Target was not found.
@@ -125,6 +125,10 @@ public class AprilTagLocalization {
         moveRobot(drive, strafe, turn);
         //sleep(10); //Commented to allow for continuous roadrunner pose estimate updates
         Robot.Chassis.drive.updatePoseEstimate();
+    }
+
+    public static boolean getTargetFound(){
+        return targetFound;
     }
 
     public static double getXError() {

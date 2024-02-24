@@ -28,6 +28,7 @@ public class RobotHeadingFunctions extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         Robot.init(hardwareMap);
         waitForStart();
+
         ElapsedTime timerHeading = new ElapsedTime();
 
         double integralSumHeading = 0;
@@ -86,9 +87,5 @@ public class RobotHeadingFunctions extends LinearOpMode {
             telemetry.addData("dist", distance);
             telemetry.update();
         }
-    }
-
-    double getPos(){
-        return ThreeDeadWheelLocalizer.par0.getPositionAndVelocity().position * MecanumDrive.PARAMS.inPerTick;
     }
 }
