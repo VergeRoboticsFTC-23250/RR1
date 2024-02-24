@@ -1,5 +1,4 @@
 package org.firstinspires.ftc.teamcode.auto;
-
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
@@ -23,14 +22,13 @@ import org.firstinspires.ftc.teamcode.auto.apriltag.AprilTagLocalization;
 import org.firstinspires.ftc.teamcode.auto.opencv.DetectionRed;
 import org.firstinspires.ftc.teamcode.auto.opencv.Vision;
 import org.firstinspires.ftc.teamcode.util.Robot;
-
 @Autonomous
 @Config
 public class AutoRed extends LinearOpMode {
     public static int firstPixelDelay = 150;
     public static double pushIn = 4;
     public static double pushInPower = 0.5;
-    public static double aprilTagRunDuration = 2250;
+    public static double aprilTagRunDuration = 3000;
 
     //Drive To Back
     public static double KpForward = 2;
@@ -55,12 +53,12 @@ public class AutoRed extends LinearOpMode {
     public static double threshhold = 950;
     public static double strafePower = -0.3;
     public static int t1 = 250;
-    public static double runToBackCancelThreshold = 0.015;
+    public static double runToBackCancelThreshold = 0.02;
 
     public static double toCenter = 20;
     public static double toCenterPower = -0.5;
 
-    public static double outtakeTime = 2250;
+    public static double outtakeTime = 3000;
 
     PropPosition position = LEFT;
     DigitalChannel limitL;
@@ -198,8 +196,8 @@ public class AutoRed extends LinearOpMode {
 
         Robot.Chassis.runX(pushIn, pushInPower);
 
-        plus2();
-        plus2();
+        firstPlus2();
+        secondPlus2();
 
         Thread.sleep(10000);
     }
@@ -283,6 +281,112 @@ public class AutoRed extends LinearOpMode {
             telemetry.update();
         }
     }
+    public void runToBack2(){
+        Robot.Heading.reboot();
+        ElapsedTime timerHeading = new ElapsedTime();
+
+        double integralSumHeading = 0;
+        double lastErrorHeading = 0;
+
+        double dist = Robot.Distance.getDist(DistanceUnit.METER);
+
+        while (opModeIsActive() && dist > takeoverDist){
+            double heading = Robot.Heading.getYaw();
+            double errorHeading = referenceHeading - heading;
+            double derivativeHeading = (errorHeading - lastErrorHeading) / timerHeading.seconds();
+            integralSumHeading = integralSumHeading + (errorHeading * timerHeading.seconds());
+            double outHeading = (KpHeading * errorHeading) + (KiHeading * integralSumHeading) + (KdHeading * derivativeHeading);
+
+            dist = Robot.Distance.getDist(DistanceUnit.METER);
+
+            telemetry.addData("dist", dist);
+            telemetry.update();
+
+            Robot.Chassis.run(power, 0, outHeading);
+
+            lastErrorHeading = errorHeading;
+            timerHeading.reset();
+        }
+
+        Robot.Nicker.setOut();
+
+        double integralSumForward = 0;
+
+        double lastErrorForward = 0;
+
+        ElapsedTime timer = new ElapsedTime();
+
+        double startTime = System.currentTimeMillis();
+
+        while (opModeIsActive() && Math.abs(referenceForward - dist) > runToBackCancelThreshold) {
+
+            if(System.currentTimeMillis() - startTime > 500 && startTime != -1){
+                Robot.Claw.setIntake();
+                startTime = -1;
+            }
+            dist = Robot.Distance.getDist(DistanceUnit.METER);
+            double heading = Robot.Heading.getYaw();
+
+            double errorForward = referenceForward - dist;
+            double errorHeading = referenceHeading - heading;
+
+            double derivativeForward = (errorForward - lastErrorForward) / timer.seconds();
+            double derivativeHeading = (errorHeading - lastErrorHeading) / timerHeading.seconds();
+
+            integralSumForward = integralSumForward + (errorForward * timer.seconds());
+            integralSumHeading = integralSumHeading + (errorHeading * timerHeading.seconds());
+
+            double outForward = (KpForward * errorForward) + (KiForward * integralSumForward) + (KdForward * derivativeForward);
+            double outHeading = (KpHeading * errorHeading) + (KiHeading * integralSumHeading) + (KdHeading * derivativeHeading);
+
+            Robot.Chassis.run(outForward, 0, outHeading);
+
+            lastErrorForward = errorForward;
+            lastErrorHeading = errorHeading;
+
+            timer.reset();
+            timerHeading.reset();
+
+            telemetry.addData("dist", dist);
+            telemetry.update();
+        }
+
+        Robot.Claw.setBothGrips(true);
+
+        integralSumForward = 0;
+
+        lastErrorForward = 0;
+
+        timer = new ElapsedTime();
+
+        while (opModeIsActive() && !Robot.Color.isWhite(threshhold)) {
+            dist = Robot.Distance.getDist(DistanceUnit.METER);
+            double heading = Robot.Heading.getYaw();
+
+            double errorForward = referenceForward - dist;
+            double errorHeading = referenceHeading - heading;
+
+            double derivativeForward = (errorForward - lastErrorForward) / timer.seconds();
+            double derivativeHeading = (errorHeading - lastErrorHeading) / timerHeading.seconds();
+
+            integralSumForward = integralSumForward + (errorForward * timer.seconds());
+            integralSumHeading = integralSumHeading + (errorHeading * timerHeading.seconds());
+
+            double outForward = (KpForward * errorForward) + (KiForward * integralSumForward) + (KdForward * derivativeForward);
+            double outHeading = (KpHeading * errorHeading) + (KiHeading * integralSumHeading) + (KdHeading * derivativeHeading);
+
+            Robot.Chassis.run(outForward, -0.5, outHeading);
+
+            lastErrorForward = errorForward;
+            lastErrorHeading = errorHeading;
+
+            timer.reset();
+            timerHeading.reset();
+
+            telemetry.addData("dist", dist);
+            telemetry.update();
+        }
+    }
 
     public void intake() throws InterruptedException {
         Robot.Claw.setBothGrips(true);
@@ -333,7 +437,7 @@ public class AutoRed extends LinearOpMode {
 //        Thread.sleep(regriptime);
 //        Robot.Claw.setBothGrips(false);
     }
-    public void plus2() throws InterruptedException {
+    public void firstPlus2() throws InterruptedException {
         Robot.Claw.setBothGrips(true);
 
         sleep(250);
@@ -369,12 +473,12 @@ public class AutoRed extends LinearOpMode {
                 step++;
             }
 
-            if(System.currentTimeMillis() - startTime >= 500 && step == 1){
+            if(System.currentTimeMillis() - startTime >= 750 && step == 1){
                 Robot.Claw.setBothGrips(false);
                 step++;
             }
 
-            if(System.currentTimeMillis() - startTime >= 750 && step == 0){
+            if(System.currentTimeMillis() - startTime >= 1000 && step == 0){
                 Robot.Claw.setOuttake();
                 step++;
             }
@@ -393,6 +497,78 @@ public class AutoRed extends LinearOpMode {
         while (opModeIsActive() && System.currentTimeMillis() - startTime < outtakeTime){
             AprilTagLocalization.update();
         }
+
+        Robot.Claw.setOuttake();
+
+        Robot.Chassis.runX(pushIn + 2, pushInPower);
+
+        Robot.Claw.setBothGrips(true);
+    }
+    public void secondPlus2() throws InterruptedException {
+        Robot.Claw.setBothGrips(true);
+
+        sleep(250);
+
+        Robot.Chassis.runX(pushIn, -pushInPower);
+        Robot.Claw.setRest();
+        Robot.Claw.setBothGrips(false);
+        Robot.Arm.setRest();
+        Robot.Chassis.runY(toCenter, -toCenterPower);
+        Robot.Arm.setIntake();
+        Robot.Claw.setOuttake();
+
+        runToBack2();
+        Robot.Chassis.run(0, 0, 0);
+
+        //intake
+        Robot.Chassis.runX(1, power);
+        Robot.Nicker.setHome();
+        sleep(500);
+        Robot.Claw.setBothGrips(false);
+
+        Robot.Chassis.runX(4, -power);
+        Robot.Nicker.setOut();
+        Robot.Chassis.runY(4, -power);
+        Robot.Arm.setRest();
+        Robot.Claw.setRest();
+
+        double startTime = System.currentTimeMillis();
+
+        Robot.Heading.reboot();
+        double currentY = drive.pose.position.y;
+        int step = 0;
+        while (Math.abs(currentY - drive.pose.position.y) < 48){
+            if(System.currentTimeMillis() - startTime >= 250 && step == 0){
+                Robot.Claw.setBothGrips(true);
+                step++;
+            }
+
+            if(System.currentTimeMillis() - startTime >= 750 && step == 1){
+                Robot.Claw.setBothGrips(false);
+                step++;
+            }
+
+            if(System.currentTimeMillis() - startTime >= 1000 && step == 0){
+                Robot.Claw.setOuttake();
+                step++;
+            }
+
+            Robot.Chassis.run(-power, 0, ((Math.PI * 1/2) - Robot.Heading.getYaw()) * pGainHeading);
+            drive.updatePoseEstimate();
+        }
+        Robot.Chassis.run(0, 0, 0);
+
+        AprilTagLocalization.setDesiredTagId(-1);
+
+        Robot.Arm.setOuttake();
+
+        startTime = System.currentTimeMillis();
+
+        while (opModeIsActive() && System.currentTimeMillis() - startTime < outtakeTime){
+            AprilTagLocalization.update();
+        }
+
+        Robot.Claw.setOuttake();
 
         Robot.Chassis.runX(pushIn + 2, pushInPower);
 
