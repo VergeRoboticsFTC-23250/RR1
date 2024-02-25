@@ -1,39 +1,33 @@
 package org.firstinspires.ftc.teamcode.auto;
+
+import static org.firstinspires.ftc.teamcode.util.Robot.AllianceSide.BLUE;
+import static org.firstinspires.ftc.teamcode.util.Robot.Chassis.drive;
+import static org.firstinspires.ftc.teamcode.util.Robot.PropPosition;
+import static org.firstinspires.ftc.teamcode.util.Robot.PropPosition.LEFT;
+import static org.firstinspires.ftc.teamcode.util.Robot.pGainHeading;
+
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.ftc.Actions;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import static org.firstinspires.ftc.teamcode.auto.AutoBlue.strafePark;
-import static org.firstinspires.ftc.teamcode.util.Robot.Chassis.drive;
-import static org.firstinspires.ftc.teamcode.util.Robot.PropPosition;
-import static org.firstinspires.ftc.teamcode.util.Robot.AllianceSide.*;
-import static org.firstinspires.ftc.teamcode.util.Robot.PropPosition.CENTER;
-import static org.firstinspires.ftc.teamcode.util.Robot.PropPosition.LEFT;
-import static org.firstinspires.ftc.teamcode.util.Robot.PropPosition.RIGHT;
-import static org.firstinspires.ftc.teamcode.util.Robot.pGainHeading;
-
-import androidx.annotation.NonNull;
-
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.auto.apriltag.AprilTagLocalization;
-import org.firstinspires.ftc.teamcode.auto.opencv.DetectionRed;
+import org.firstinspires.ftc.teamcode.auto.opencv.DetectionBlue;
 import org.firstinspires.ftc.teamcode.auto.opencv.Vision;
 import org.firstinspires.ftc.teamcode.util.Robot;
-import org.tensorflow.lite.task.vision.detector.Detection;
 
 @Autonomous
 @Config
-public class AutoRed extends LinearOpMode {
+public class AutoBlue extends LinearOpMode {
     public static int firstPixelDelay = 150;
     public static double pushIn = 6;
     public static double pushInPower = 0.5;
-    public static double aprilTagRunDuration = 3000;
+    public static double aprilTagRunDuration = 4000;
 
     //Drive To Back
     public static double KpForward = 2;
@@ -69,7 +63,6 @@ public class AutoRed extends LinearOpMode {
     public static double strafeDist = 12;
 
     public static double strafePark = 20;
-    public static double strafe2nd = 0.5;
 
     PropPosition position = LEFT;
     DigitalChannel limitL;
@@ -77,65 +70,7 @@ public class AutoRed extends LinearOpMode {
     @Config
     public static class LeftSpikeMark{
         public static Action action;
-        public static double heading = -90;
-
-        public static double x = 26;
-        public static double y = -4;
-
-        public static double x2 = 26;
-        public static double y2 = 6;
-
-        public static void buildAction(){
-            action = drive.actionBuilder(drive.pose)
-                    .afterTime(0.2, telemetryPacket -> {
-                        Robot.Arm.setIntake();
-                        Robot.Claw.setIntake();
-                        return false;
-                    })
-                    .strafeToLinearHeading(new Vector2d(x, y), Math.toRadians(heading))
-                    .strafeToLinearHeading(new Vector2d(x2, y2), Math.toRadians(heading))
-                    .stopAndAdd(telemetryPacket -> {
-                        Robot.Claw.setLeftGrip(true);
-                        return false;
-                    })
-                    .strafeToLinearHeading(new Vector2d(x, y), Math.toRadians(heading))
-                    .build();
-        }
-    }
-
-    @Config
-    public static class CenterSpikeMark{
-        public static Action action;
-        public static double heading = -90;
-
-        public static double x = 36;
-        public static double y = -14;
-
-        public static double x2 = 36;
-        public static double y2 = -4;
-
-        public static void buildAction(){
-            action = drive.actionBuilder(drive.pose)
-                    .afterTime(0.2, telemetryPacket -> {
-                        Robot.Arm.setIntake();
-                        Robot.Claw.setIntake();
-                        return false;
-                    })
-                    .strafeToLinearHeading(new Vector2d(x, y), Math.toRadians(heading))
-                    .strafeToLinearHeading(new Vector2d(x2, y2), Math.toRadians(heading))
-                    .stopAndAdd(telemetryPacket -> {
-                        Robot.Claw.setLeftGrip(true);
-                        return false;
-                    })
-                    .strafeToLinearHeading(new Vector2d(x, y), Math.toRadians(heading))
-                    .build();
-        }
-    }
-
-    @Config
-    public static class RightSpikeMark{
-        public static Action action;
-        public static double heading = -90;
+        public static double heading = 90;
 
         public static double x = 26;
         public static double y = -24;
@@ -150,20 +85,78 @@ public class AutoRed extends LinearOpMode {
                         Robot.Claw.setIntake();
                         return false;
                     })
-                    .strafeToLinearHeading(new Vector2d(x, y), Math.toRadians(heading))
-                    .strafeToLinearHeading(new Vector2d(x2, y2), Math.toRadians(heading))
+                    .strafeToLinearHeading(new Vector2d(x, -y), Math.toRadians(heading))
+                    .strafeToLinearHeading(new Vector2d(x2, -y2), Math.toRadians(heading))
                     .stopAndAdd(telemetryPacket -> {
-                        Robot.Claw.setLeftGrip(true);
+                        Robot.Claw.setRightGrip(true);
                         return false;
                     })
-                    .strafeToLinearHeading(new Vector2d(x, y), Math.toRadians(heading))
+                    .strafeToLinearHeading(new Vector2d(x, -y), Math.toRadians(heading))
+                    .build();
+        }
+    }
+
+    @Config
+    public static class CenterSpikeMark{
+        public static Action action;
+        public static double heading = 90;
+
+        public static double x = 36;
+        public static double y = -14;
+
+        public static double x2 = 36;
+        public static double y2 = -4;
+
+        public static void buildAction(){
+            action = drive.actionBuilder(drive.pose)
+                    .afterTime(0.2, telemetryPacket -> {
+                        Robot.Arm.setIntake();
+                        Robot.Claw.setIntake();
+                        return false;
+                    })
+                    .strafeToLinearHeading(new Vector2d(x, -y), Math.toRadians(heading))
+                    .strafeToLinearHeading(new Vector2d(x2, -y2), Math.toRadians(heading))
+                    .stopAndAdd(telemetryPacket -> {
+                        Robot.Claw.setRightGrip(true);
+                        return false;
+                    })
+                    .strafeToLinearHeading(new Vector2d(x, -y), Math.toRadians(heading))
+                    .build();
+        }
+    }
+
+    @Config
+    public static class RightSpikeMark{
+        public static Action action;
+        public static double heading = 90;
+
+        public static double x = 26;
+        public static double y = -4;
+
+        public static double x2 = 26;
+        public static double y2 = 6;
+
+        public static void buildAction(){
+            action = drive.actionBuilder(drive.pose)
+                    .afterTime(0.2, telemetryPacket -> {
+                        Robot.Arm.setIntake();
+                        Robot.Claw.setIntake();
+                        return false;
+                    })
+                    .strafeToLinearHeading(new Vector2d(x, -y), Math.toRadians(heading))
+                    .strafeToLinearHeading(new Vector2d(x2, -y2), Math.toRadians(heading))
+                    .stopAndAdd(telemetryPacket -> {
+                        Robot.Claw.setRightGrip(true);
+                        return false;
+                    })
+                    .strafeToLinearHeading(new Vector2d(x, -y), Math.toRadians(heading))
                     .build();
         }
     }
 
     public void runOpMode() throws InterruptedException {
         Robot.init(hardwareMap);
-        Vision.init(hardwareMap, RED);
+        Vision.init(hardwareMap, BLUE);
         limitL = hardwareMap.get(DigitalChannel.class, "limitR");
         limitR = hardwareMap.get(DigitalChannel.class, "limitL");
         LeftSpikeMark.buildAction();
@@ -173,35 +166,34 @@ public class AutoRed extends LinearOpMode {
         initLoop(); //Detection loop
         position = Vision.getPosition();
         waitForStart();
-        DetectionRed.webcam.stopStreaming();
+        DetectionBlue.webcam.stopStreaming();
 
         switch (position){
             case LEFT:
-                DetectionRed.webcam.closeCameraDeviceAsync(() -> {
+                DetectionBlue.webcam.closeCameraDeviceAsync(() -> {
                     try {
-                        AprilTagLocalization.init(hardwareMap, 4);
+                        AprilTagLocalization.init(hardwareMap, 1);
                     } catch (InterruptedException ignored) {}
                 });
-                strafePark -= 6;
-                strafe2nd += 0.5;
                 Actions.runBlocking(LeftSpikeMark.action);
+                strafePark += 6;
                 break;
             case CENTER:
-                DetectionRed.webcam.closeCameraDeviceAsync(() -> {
+                DetectionBlue.webcam.closeCameraDeviceAsync(() -> {
                     try {
-                        AprilTagLocalization.init(hardwareMap, 5);
+                        AprilTagLocalization.init(hardwareMap, 2);
                     } catch (InterruptedException ignored) {}
                 });
                 Actions.runBlocking(CenterSpikeMark.action);
                 break;
             case RIGHT:
-                DetectionRed.webcam.closeCameraDeviceAsync(() -> {
+                DetectionBlue.webcam.closeCameraDeviceAsync(() -> {
                     try {
-                        AprilTagLocalization.init(hardwareMap, 6);
+                        AprilTagLocalization.init(hardwareMap, 3);
                     } catch (InterruptedException ignored) {}
                 });
-                strafePark += 6;
                 Actions.runBlocking(RightSpikeMark.action);
+                strafePark -= 6;
                 break;
         }
 
@@ -222,10 +214,9 @@ public class AutoRed extends LinearOpMode {
             AprilTagLocalization.update();
             drive.updatePoseEstimate();
         }
+        Robot.Chassis.runY(0.5, 0.5, Math.PI * 3/2);
 
-        Robot.Chassis.runY(strafe2nd, 0.5);
-
-        Robot.Chassis.runX(pushIn, pushInPower);
+        Robot.Chassis.runX(pushIn, pushInPower, (Math.PI * 3/2));
 
         Thread.sleep(500);
 
@@ -241,9 +232,9 @@ public class AutoRed extends LinearOpMode {
 
         Robot.Heading.reboot();
 
-        Robot.Chassis.runY(strafePark, -power);
+        Robot.Chassis.runY(strafePark, power, Math.PI * 3/2);
 
-        Robot.Chassis.runX(10, -power);
+        Robot.Chassis.runX(6, -power);
 
         //firstPlus2();
         //secondPlus2();

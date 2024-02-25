@@ -14,17 +14,21 @@ import static org.firstinspires.ftc.teamcode.util.Robot.RobotState;
 import static org.firstinspires.ftc.teamcode.util.Robot.Slides;
 import static org.firstinspires.ftc.teamcode.util.Robot.robotState;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.util.Robot;
 
 @TeleOp
+@Config
 public class DriverMode extends LinearOpMode {
     DriveThread driveThread = new DriveThread();
     TelemetryThread telemetryThread = new TelemetryThread();
     HookThread hookThread = new HookThread();
     LimitSwitchThread limitSwitchThread = new LimitSwitchThread();
+    public static double multiply = .5;
+    public static double add = 0;
     @Override
     public void runOpMode() throws InterruptedException {
         Robot.init(hardwareMap);
@@ -39,7 +43,6 @@ public class DriverMode extends LinearOpMode {
         hookThread.start();
 
         while (!isStopRequested()) {
-
             if(!gamepad2.cross && robotState != RobotState.INTAKE && gamepad2.square){
                 if(robotState == RobotState.OUTTAKE){
                     OuttakeToRest();
@@ -95,6 +98,42 @@ public class DriverMode extends LinearOpMode {
 
             if(gamepad1.dpad_up && gamepad1.triangle){
                 Airplane.launchPlane();
+            }
+
+            if(robotState == RobotState.REST && gamepad2.right_stick_button){
+                Nicker.setOut();
+                while (gamepad2.right_stick_button){
+                    if(robotState == RobotState.OUTTAKE && !gamepad2.square && !gamepad2.cross){
+                        if(gamepad2.right_trigger > 0 && gamepad2.left_trigger > 0){
+                            Slides.run(0);
+                        }else if(gamepad2.right_trigger > 0){
+                            Slides.run(gamepad2.right_trigger);
+                        }else if(gamepad2.left_trigger > 0){
+                            Slides.run(-gamepad2.left_trigger);
+                        }else{
+                            Slides.run(0);
+                        }
+                    }
+                }
+            }
+
+            if(robotState == RobotState.OUTTAKE && gamepad2.triangle){
+                while (gamepad2.triangle){
+                    Claw.pivot.setPosition((gamepad2.left_stick_y * multiply)  + add);
+
+                    if(robotState == RobotState.OUTTAKE && !gamepad2.square && !gamepad2.cross){
+                        if(gamepad2.right_trigger > 0 && gamepad2.left_trigger > 0){
+                            Slides.run(0);
+                        }else if(gamepad2.right_trigger > 0){
+                            Slides.run(gamepad2.right_trigger);
+                        }else if(gamepad2.left_trigger > 0){
+                            Slides.run(-gamepad2.left_trigger);
+                        }else{
+                            Slides.run(0);
+                        }
+                    }
+                }
+                Claw.setOuttake();
             }
         }
     }

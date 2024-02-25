@@ -34,13 +34,13 @@ public class BlueSidePipeline extends OpenCvPipeline {
     public static int heightR = 300;
     public static int widthR = 300;
     public static int leftRectX = 350;
-    public static int leftRectY = 200;
+    public static int leftRectY = 600;
 
     public static int centerRectX = 1010;
-    public static int centerRectY = 150;
+    public static int centerRectY = 550;
 
     public static int rightRectX = 1650;
-    public static int rightRectY = 200;
+    public static int rightRectY = 600;
     private volatile PropPosition position = CENTER;
 
     public void init(Mat firstFrame){

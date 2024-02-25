@@ -134,20 +134,40 @@ public class Robot {
         }
 
         public static void runX(double dist, double power) throws InterruptedException {
-            Robot.Heading.reboot();
             double currentY = drive.pose.position.y;
             while (Math.abs(currentY - drive.pose.position.y) < dist){
-                Robot.Chassis.run(power, 0, ((Math.PI * 1/2) - Robot.Heading.getYaw()) * pGainHeading);
+                //Robot.Chassis.run(power, 0, ((Math.PI * 1/2) - Robot.Heading.getYaw()) * pGainHeading);
+                Robot.Chassis.run(power, 0, 0);
+                drive.updatePoseEstimate();
+            }
+            Robot.Chassis.run(0, 0, 0);
+        }
+
+        public static void runX(double dist, double power, double desiredHeading) throws InterruptedException {
+            double currentY = drive.pose.position.y;
+            while (Math.abs(currentY - drive.pose.position.y) < dist){
+                //Robot.Chassis.run(power, 0, (desiredHeading - Robot.Heading.getYaw()) * pGainHeading);
+                Robot.Chassis.run(power, 0, 0);
                 drive.updatePoseEstimate();
             }
             Robot.Chassis.run(0, 0, 0);
         }
 
         public static void runY(double dist, double power) throws InterruptedException {
-            Robot.Heading.reboot();
             double currentX = drive.pose.position.x;
             while (Math.abs(currentX - drive.pose.position.x) < dist){
-                Robot.Chassis.run(0, power, ((Math.PI * 1/2) - Robot.Heading.getYaw()) * pGainHeading);
+                //Robot.Chassis.run(0, power, ((Math.PI * 1/2) - Robot.Heading.getYaw()) * pGainHeading);
+                Robot.Chassis.run(0, power, 0);
+                drive.updatePoseEstimate();
+            }
+            Robot.Chassis.run(0, 0, 0);
+        }
+
+        public static void runY(double dist, double power, double desiredHeading) throws InterruptedException {
+            double currentX = drive.pose.position.x;
+            while (Math.abs(currentX - drive.pose.position.x) < dist){
+                //Robot.Chassis.run(0, power, (desiredHeading - Robot.Heading.getYaw()) * pGainHeading);
+                Robot.Chassis.run(0, power, 0);
                 drive.updatePoseEstimate();
             }
             Robot.Chassis.run(0, 0, 0);

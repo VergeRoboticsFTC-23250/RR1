@@ -20,6 +20,7 @@ import org.firstinspires.ftc.teamcode.util.Robot;
 
 @Autonomous
 @Config
+@Disabled
 public class Intake extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         Robot.init(hardwareMap);
