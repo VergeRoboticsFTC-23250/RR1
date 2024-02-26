@@ -5,7 +5,7 @@ import static org.firstinspires.ftc.teamcode.util.Robot.Chassis;
 import static org.firstinspires.ftc.teamcode.util.Robot.Claw;
 import static org.firstinspires.ftc.teamcode.util.Robot.Hook;
 import static org.firstinspires.ftc.teamcode.util.Robot.IntakeToRest;
-import static org.firstinspires.ftc.teamcode.util.Robot.LimitSwitch;
+import static org.firstinspires.ftc.teamcode.util.Robot.Bumpers;
 import static org.firstinspires.ftc.teamcode.util.Robot.Nicker;
 import static org.firstinspires.ftc.teamcode.util.Robot.OuttakeToRest;
 import static org.firstinspires.ftc.teamcode.util.Robot.RestToIntake;
@@ -163,7 +163,7 @@ public class DriverMode extends LinearOpMode {
                     telemetry.addData("Slide Position Differance", Slides.getPosDifferance());
                     telemetry.addData("Slide Position individual", Slides.getPosIndividual());
                     telemetry.addData("Slide Target Pos individual", Slides.getTargetPositions());
-                    telemetry.addData("Limits", LimitSwitch.getLeft() + " | " + LimitSwitch.getRight());
+                    telemetry.addData("Limits", Bumpers.getLeft() + " | " + Bumpers.getRight());
                     telemetry.addData("RobotState", robotState);
                     telemetry.update();
                 }
@@ -196,7 +196,7 @@ public class DriverMode extends LinearOpMode {
             try {
                 while (!isStopRequested()){
                     long currentTime = System.currentTimeMillis();
-                    if(LimitSwitch.getRight() && LimitSwitch.getLeft()){
+                    if(Bumpers.getRight() && Bumpers.getLeft()){
                         if(currentTime - lastTime > 1000 || lastCount != 2) {
                             gamepad2.setLedColor(0, 1, 0, 1000);
                             gamepad1.setLedColor(0, 1, 0, 1000);
@@ -204,7 +204,7 @@ public class DriverMode extends LinearOpMode {
                             lastTime = currentTime;
                         }
                         lastCount = 2;
-                    }else if(LimitSwitch.getLeft() || LimitSwitch.getRight()){
+                    }else if(Bumpers.getLeft() || Bumpers.getRight()){
                         if(currentTime - lastTime > 1000 || lastCount != 1) {
                             gamepad2.setLedColor(1, 0, 1, 1000);
                             gamepad1.setLedColor(1, 0, 1, 1000);

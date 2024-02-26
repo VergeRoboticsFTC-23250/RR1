@@ -16,48 +16,32 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.teamcode.util.PIDController;
 import org.firstinspires.ftc.teamcode.util.Robot;
 
 @TeleOp
 @Config
-@Disabled
 public class StraightGyro extends LinearOpMode {
-    public static double pushIn = 5;
-    public static double power = 0.25;
-    public static double target = Math.PI * 1/2;
-    public static double pGain = 4;
-    BNO055IMU imu;
-    public void runOpMode(){
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-
-        parameters.mode                = BNO055IMU.SensorMode.IMU;
-        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
-        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.loggingEnabled      = false;
-
-        // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
-        // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
-        // and named "imu".
-        imu = hardwareMap.get(BNO055IMU.class, "imu");
-
-        imu.initialize(parameters);
-
-        telemetry.addData("Mode", "calibrating...");
-        telemetry.update();
-
-        // make sure the imu gyro is calibrated before continuing.
-        while (!isStopRequested() && !imu.isGyroCalibrated())
-        {
-            sleep(50);
-            idle();
-        }
-
-        telemetry.addData("Mode", "waiting for start");
-        telemetry.addData("imu calib status", imu.getCalibrationStatus().toString());
-        telemetry.update();
-
-        // wait for start button.
+    public static double target = 0;
+    public static double kP = 2;
+    public static double kI = 0;
+    public static double kD = 0;
+    public static double power = 0;
+    public static double dist = 12;
+    public void runOpMode() throws InterruptedException {
+        Robot.init(hardwareMap);
 
         waitForStart();
+
+        double currentX = drive.pose.position.x;
+        double currentY = drive.pose.position.y;
+        PIDController headingController = new PIDController(2, 0, 0.001, target);
+        PIDController yController = new PIDController(kP, kI, kD, currentY);
+        while (Math.abs(currentX - drive.pose.position.x) < dist){
+            Robot.Chassis.run(power, yController.getOut(drive.pose.position.y), headingController.getOut(Robot.Heading.getYaw()));
+            yController.setGains(kP, kI, kD);
+            drive.updatePoseEstimate();
+        }
+        Robot.Chassis.run(0, 0, 0);
     }
 }

@@ -1,34 +1,21 @@
 package org.firstinspires.ftc.teamcode.util;
 
-import android.graphics.Color;
-
-import androidx.annotation.NonNull;
-
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
-import com.qualcomm.hardware.bosch.BHI260IMU;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.Function;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.util.roadrunner.MecanumDrive;
-import org.firstinspires.ftc.teamcode.util.roadrunner.ThreeDeadWheelLocalizer;
-import org.firstinspires.ftc.teamcode.util.roadrunner.TwoDeadWheelLocalizer;
 
 @Config
 public class Robot {
@@ -36,7 +23,9 @@ public class Robot {
     public static int SLEEP_TIME_SHORT = 300;
     public static int SLEEP_TIME_LONG = 700;
 
-    public static double pGainHeading = 4;
+    public static PIDCoefficients headingGains = new PIDCoefficients(2, 0, 0.001);
+    public static PIDCoefficients strafeGains = new PIDCoefficients(0.25, 0, 0);
+    public static PIDCoefficients forwardGains = new PIDCoefficients(0.15, 0, 0);
 
     public enum RobotState{INTAKE, REST, OUTTAKE}
 
@@ -61,7 +50,7 @@ public class Robot {
         Arm.init(hardwareMap);
         Claw.init(hardwareMap);
         Nicker.init(hardwareMap);
-        LimitSwitch.init(hardwareMap);
+        Bumpers.init(hardwareMap);
         Color.init(hardwareMap);
         Heading.init(hardwareMap);
         Distance.init(hardwareMap);
@@ -132,42 +121,25 @@ public class Robot {
 
             drive.updatePoseEstimate();
         }
-
-        public static void runX(double dist, double power) throws InterruptedException {
-            double currentY = drive.pose.position.y;
-            while (Math.abs(currentY - drive.pose.position.y) < dist){
-                //Robot.Chassis.run(power, 0, ((Math.PI * 1/2) - Robot.Heading.getYaw()) * pGainHeading);
-                Robot.Chassis.run(power, 0, 0);
+        public static void runX(double dist, double power, double heading) throws InterruptedException {
+            double startX = drive.pose.position.x;
+            double startY = drive.pose.position.y;
+            PIDController headingController = new PIDController(headingGains, heading);
+            PIDController strafeController = new PIDController(strafeGains, startX);
+            while (Math.abs(startY - drive.pose.position.y) < dist){
+                Robot.Chassis.run(power, strafeController.getOut(drive.pose.position.x), headingController.getOut(Robot.Heading.getYaw()));
                 drive.updatePoseEstimate();
             }
             Robot.Chassis.run(0, 0, 0);
         }
 
-        public static void runX(double dist, double power, double desiredHeading) throws InterruptedException {
-            double currentY = drive.pose.position.y;
-            while (Math.abs(currentY - drive.pose.position.y) < dist){
-                //Robot.Chassis.run(power, 0, (desiredHeading - Robot.Heading.getYaw()) * pGainHeading);
-                Robot.Chassis.run(power, 0, 0);
-                drive.updatePoseEstimate();
-            }
-            Robot.Chassis.run(0, 0, 0);
-        }
-
-        public static void runY(double dist, double power) throws InterruptedException {
-            double currentX = drive.pose.position.x;
-            while (Math.abs(currentX - drive.pose.position.x) < dist){
-                //Robot.Chassis.run(0, power, ((Math.PI * 1/2) - Robot.Heading.getYaw()) * pGainHeading);
-                Robot.Chassis.run(0, power, 0);
-                drive.updatePoseEstimate();
-            }
-            Robot.Chassis.run(0, 0, 0);
-        }
-
-        public static void runY(double dist, double power, double desiredHeading) throws InterruptedException {
-            double currentX = drive.pose.position.x;
-            while (Math.abs(currentX - drive.pose.position.x) < dist){
-                //Robot.Chassis.run(0, power, (desiredHeading - Robot.Heading.getYaw()) * pGainHeading);
-                Robot.Chassis.run(0, power, 0);
+        public static void runY(double dist, double power, double heading) throws InterruptedException {
+            double startX = drive.pose.position.x;
+            double startY = drive.pose.position.y;
+            PIDController headingController = new PIDController(headingGains, heading);
+            PIDController straightController = new PIDController(forwardGains, startY);
+            while (Math.abs(startX - drive.pose.position.x) < dist){
+                Robot.Chassis.run(straightController.getOut(drive.pose.position.y), power, headingController.getOut(Robot.Heading.getYaw()));
                 drive.updatePoseEstimate();
             }
             Robot.Chassis.run(0, 0, 0);
@@ -450,12 +422,12 @@ public class Robot {
         }
     }
 
-    public static class LimitSwitch{
+    public static class Bumpers {
         public static DigitalChannel rightSwitch;
         public static DigitalChannel leftSwitch;
         public static void init(HardwareMap hardwareMap){
-            rightSwitch = hardwareMap.get(DigitalChannel.class, "rightSwitch");
-            leftSwitch = hardwareMap.get(DigitalChannel.class, "leftSwitch");
+            rightSwitch = hardwareMap.get(DigitalChannel.class, "limitR");
+            leftSwitch = hardwareMap.get(DigitalChannel.class, "limitL");
         }
 
         public static boolean getRight(){
@@ -489,26 +461,23 @@ public class Robot {
     }
 
     public static class Heading{
-        private static BHI260IMU imu;
-        static IMU.Parameters params = new IMU.Parameters(
-                new RevHubOrientationOnRobot(
-                        RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
-                        RevHubOrientationOnRobot.UsbFacingDirection.UP
-                )
-        );
+        public static BNO055IMU imu;
+        static BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         public static void init(HardwareMap hardwareMap){
-            imu = hardwareMap.get(BHI260IMU.class, "imu");
-            imu.initialize(params);
-            imu.resetYaw();
+            parameters.mode                = BNO055IMU.SensorMode.IMU;
+            parameters.angleUnit           = BNO055IMU.AngleUnit.RADIANS;
+            parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+            parameters.loggingEnabled      = false;
+
+            imu = hardwareMap.get(BNO055IMU.class, "imu");
+
+            imu.initialize(parameters);
         }
         public static double getYaw(){
-            return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS) + Math.PI;
+            return imu.getAngularOrientation().firstAngle;
         }
         public static void reboot(){
-            imu.initialize(params);
-        }
-        public static void reset(){
-            imu.resetYaw();
+            imu.initialize(parameters);
         }
     }
 
