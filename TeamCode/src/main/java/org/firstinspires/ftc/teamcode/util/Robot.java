@@ -127,7 +127,7 @@ public class Robot {
             PIDController headingController = new PIDController(headingGains, heading);
             PIDController strafeController = new PIDController(strafeGains, startX);
             while (Math.abs(startY - drive.pose.position.y) < dist){
-                Robot.Chassis.run(power, strafeController.getOut(drive.pose.position.x), headingController.getOut(Robot.Heading.getYaw()));
+                Robot.Chassis.run(power, strafeController.getPower(drive.pose.position.x), headingController.getPower(Robot.Heading.getYaw()));
                 drive.updatePoseEstimate();
             }
             Robot.Chassis.run(0, 0, 0);
@@ -139,7 +139,7 @@ public class Robot {
             PIDController headingController = new PIDController(headingGains, heading);
             PIDController straightController = new PIDController(forwardGains, startY);
             while (Math.abs(startX - drive.pose.position.x) < dist){
-                Robot.Chassis.run(straightController.getOut(drive.pose.position.y), power, headingController.getOut(Robot.Heading.getYaw()));
+                Robot.Chassis.run(straightController.getPower(drive.pose.position.y), power, headingController.getPower(Robot.Heading.getYaw()));
                 drive.updatePoseEstimate();
             }
             Robot.Chassis.run(0, 0, 0);

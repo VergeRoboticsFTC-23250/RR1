@@ -20,6 +20,7 @@ import org.firstinspires.ftc.teamcode.auto.opencv.DetectionRed;
 import org.firstinspires.ftc.teamcode.auto.opencv.Vision;
 import org.firstinspires.ftc.teamcode.util.PIDController;
 import org.firstinspires.ftc.teamcode.util.Robot;
+import org.opencv.imgproc.CLAHE;
 
 @Autonomous
 @Config
@@ -65,6 +66,14 @@ public class Red60 extends LinearOpMode {
         initAprilTag();
 
         preload();
+
+        Chassis.runY(strafeToMiddleDist, power, heading);
+
+        plus2();
+
+        Chassis.runY(strafeToMiddleDist, power, heading);
+
+        plus2();
     }
 
     public void preload() throws InterruptedException {
@@ -103,6 +112,7 @@ public class Red60 extends LinearOpMode {
         Chassis.runX(6, power, heading);
         Claw.setBothGrips(true);
         sleep(500);
+        Claw.setBothGrips(false);
         Chassis.runX(6, -power, heading);
         Claw.setRest();
         Arm.setRest();
@@ -110,16 +120,13 @@ public class Red60 extends LinearOpMode {
 
     public void plus2() throws InterruptedException {
         //RunToBack
-        Chassis.runY(strafeToMiddleDist, power, heading);
-
         Arm.setIntake();
-        Claw.setIntake();
+        Claw.setOuttake();
 
-        double startX = drive.pose.position.x;
         PIDController headingController = new PIDController(headingGains, heading);
-        PIDController strafeController = new PIDController(strafeGains, startX);
+        PIDController strafeController = new PIDController(strafeGains, drive.pose.position.x);
         while (Distance.getDist(DistanceUnit.METER) > 1){
-            Robot.Chassis.run(power, strafeController.getOut(drive.pose.position.x), headingController.getOut(Robot.Heading.getYaw()));
+            Robot.Chassis.run(-power, strafeController.getPower(drive.pose.position.x), headingController.getPower(Robot.Heading.getYaw()));
             drive.updatePoseEstimate();
         }
 
@@ -127,7 +134,7 @@ public class Red60 extends LinearOpMode {
 
         PIDController forwardController = new PIDController(new PIDCoefficients(2, 1, 0.16), referenceForward);
         while (Distance.getDist(DistanceUnit.METER) > referenceForward){
-            Robot.Chassis.run(forwardController.getOut(Distance.getDist(DistanceUnit.METER)), strafeController.getOut(drive.pose.position.x), headingController.getOut(Robot.Heading.getYaw()));
+            Robot.Chassis.run(forwardController.getPower(Distance.getDist(DistanceUnit.METER)), strafeController.getPower(drive.pose.position.x), headingController.getPower(Robot.Heading.getYaw()));
             drive.updatePoseEstimate();
         }
 
@@ -135,7 +142,7 @@ public class Red60 extends LinearOpMode {
 
         //Intake
         while (!Color.isWhite(950)){
-            Robot.Chassis.run(forwardController.getOut(Distance.getDist(DistanceUnit.METER)), -0.3, headingController.getOut(Robot.Heading.getYaw()));
+            Robot.Chassis.run(forwardController.getPower(Distance.getDist(DistanceUnit.METER)), -0.3, headingController.getPower(Robot.Heading.getYaw()));
             drive.updatePoseEstimate();
         }
 
@@ -177,7 +184,46 @@ public class Red60 extends LinearOpMode {
         runX(6, power, heading);
         Nicker.setOut();
         runY(6, power, heading);
+        Arm.setRest();
         Claw.setRest();
+
+        //RunToForward
+        double startY = drive.pose.position.y;
+        strafeController.setReference(drive.pose.position.x);
+        strafeController.reset();
+        double startTime = System.currentTimeMillis();
+        double step = 0;
+        while (Math.abs(startY - drive.pose.position.y) < 68){
+            if(System.currentTimeMillis() - startTime > 500 && step == 0){
+                Claw.setBothGrips(true);
+                step++;
+            }else if(System.currentTimeMillis() - startTime > 750 && step == 1){
+                Claw.setBothGrips(false);
+                step++;
+            }else if(System.currentTimeMillis() - startTime > 1000 && step == 2){
+                Claw.setOuttake();
+                step++;
+            }
+            Robot.Chassis.run(power, strafeController.getPower(drive.pose.position.x), headingController.getPower(Robot.Heading.getYaw()));
+            drive.updatePoseEstimate();
+        }
+
         Arm.setOuttake();
+
+        Chassis.runY(12, -power, heading);
+
+        //AprilTagLocalization.setDesiredTagId(-1);
+        startTime = System.currentTimeMillis();
+        while (opModeIsActive() && System.currentTimeMillis() - startTime < 3000){
+            AprilTagLocalization.update();
+        }
+
+        Chassis.runX(6, power, heading);
+        Claw.setBothGrips(true);
+        sleep(500);
+        Claw.setBothGrips(false);
+        Arm.setRest();
+        Claw.setRest();
+        Chassis.runX(6, -power, heading);
     }
 }

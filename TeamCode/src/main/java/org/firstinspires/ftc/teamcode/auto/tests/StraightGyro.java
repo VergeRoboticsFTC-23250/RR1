@@ -3,19 +3,9 @@ package org.firstinspires.ftc.teamcode.auto.tests;
 import static org.firstinspires.ftc.teamcode.util.Robot.Chassis.drive;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.qualcomm.hardware.bosch.BHI260IMU;
-import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
-import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.util.PIDController;
 import org.firstinspires.ftc.teamcode.util.Robot;
 
@@ -38,7 +28,7 @@ public class StraightGyro extends LinearOpMode {
         PIDController headingController = new PIDController(2, 0, 0.001, target);
         PIDController yController = new PIDController(kP, kI, kD, currentY);
         while (Math.abs(currentX - drive.pose.position.x) < dist){
-            Robot.Chassis.run(power, yController.getOut(drive.pose.position.y), headingController.getOut(Robot.Heading.getYaw()));
+            Robot.Chassis.run(power, yController.getPower(drive.pose.position.y), headingController.getPower(Robot.Heading.getYaw()));
             yController.setGains(kP, kI, kD);
             drive.updatePoseEstimate();
         }

@@ -31,7 +31,10 @@ public class PIDController {
         this.reference = reference;
         timer = new ElapsedTime();
     }
-    public double getOut(double measured){
+    public void reset(){
+        timer.reset();
+    }
+    public double getPower(double measured){
         error = reference - measured;
 
         // rate of change of the error
